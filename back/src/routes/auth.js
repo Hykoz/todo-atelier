@@ -76,12 +76,6 @@ router.post('/login', rateLimiter, async (req, res, next) => {
     const ip = req.ip || req.socket.remoteAddress || 'unknown';
     loginAttempts.delete(ip);
 
-    // Migration transparente des anciens hashs MD5 vers scrypt avec sel
-    if (!user.password.includes(':')) {
-      const upgradedHash = hashPassword(password);
-      await pool.query('UPDATE users SET password = $1 WHERE id = $2', [upgradedHash, user.id]);
-    }
-
     res.json({
       token: signToken(user),
       user: { id: user.id, username: user.username, role: user.role },

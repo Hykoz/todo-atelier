@@ -10,20 +10,12 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, storedHash) {
-  if (!storedHash) return false;
-  if (storedHash.includes(':')) {
-    const [salt, key] = storedHash.split(':');
-    const keyBuffer = Buffer.from(key, 'hex');
-    const hashBuffer = crypto.scryptSync(password, salt, keyBuffer.length);
-    if (hashBuffer.length !== keyBuffer.length) return false;
-    return crypto.timingSafeEqual(hashBuffer, keyBuffer);
-  }
-  // Rétrocompatibilité si la base contient encore d'anciens hashs MD5
-  const md5Hash = crypto.createHash('md5').update(password).digest('hex');
-  const a = Buffer.from(md5Hash, 'utf8');
-  const b = Buffer.from(storedHash, 'utf8');
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+  if (!storedHash || !storedHash.includes(':')) return false;
+  const [salt, key] = storedHash.split(':');
+  const keyBuffer = Buffer.from(key, 'hex');
+  const hashBuffer = crypto.scryptSync(password, salt, keyBuffer.length);
+  if (hashBuffer.length !== keyBuffer.length) return false;
+  return crypto.timingSafeEqual(hashBuffer, keyBuffer);
 }
 
 function signToken(user) {
