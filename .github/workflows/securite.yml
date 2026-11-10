@@ -1,0 +1,54 @@
+name: Vérification de sécurité
+
+# Se lance automatiquement à chaque envoi de code, et peut aussi être
+# relancé manuellement depuis l'onglet "Actions" de GitHub.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  audit-dependances:
+    name: Scan des dépendances (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installer les dépendances du back
+        working-directory: ./back
+        run: npm ci
+
+      - name: Scanner les dépendances
+        working-directory: ./back
+        # "continue-on-error: true" : le job ne bloque pas la CI si une
+        # vulnérabilité reste. Choix volontaire pour cet atelier : certaines
+        # failles de dépendances ne se corrigent qu'avec une montée de
+        # version majeure, risquée à faire en une après-midi. Le but ici est
+        # d'OBSERVER et de DOCUMENTER le risque résiduel dans le rapport,
+        # pas de bloquer artificiellement le projet.
+        #
+        # Pour une CI stricte qui bloque sur toute faille élevée ou
+        # critique, remplacez par : run: npm audit --audit-level=high
+        # et supprimez la ligne continue-on-error.
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
+  analyse-statique:
+    name: Analyse statique (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Semgrep
+        run: pip install semgrep
+
+      - name: Lancer Semgrep
+        # Même logique qu'au-dessus : on observe sans bloquer par défaut.
+        continue-on-error: true
+        run: semgrep --config .semgrep/regles.yml back/src --metrics=off

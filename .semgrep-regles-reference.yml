@@ -1,0 +1,50 @@
+rules:
+  - id: weak-hash-md5
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      Hachage MD5 utilisé pour un mot de passe. MD5 est rapide et sans sel :
+      utiliser bcrypt ou Argon2 à la place.
+    patterns:
+      - pattern: crypto.createHash("md5")
+
+  - id: sql-string-concatenation
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      Requête SQL construite par concaténation de chaîne avec une variable.
+      Utiliser une requête préparée ($1, $2, …) pour éviter l’injection SQL.
+    patterns:
+      - pattern: $SQL = $SQL + ... + $VAR + ...
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: ^(?!process)
+
+  - id: hardcoded-jwt-secret
+    languages: [javascript]
+    severity: WARNING
+    message: >-
+      Valeur par défaut codée en dur pour un secret. Un secret doit toujours
+      venir d’une variable d’environnement, sans valeur par défaut faible.
+    patterns:
+      - pattern-either:
+          - pattern: process.env.JWT_SECRET || "..."
+          - pattern: process.env.$SECRET || "secret"
+
+  - id: debug-route-exposes-env
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      Cette route renvoie l’intégralité de process.env, donc tous les secrets
+      du serveur, à quiconque l’appelle.
+    patterns:
+      - pattern: 'res.json({ env: process.env, ... })'
+
+  - id: error-handler-leaks-stack
+    languages: [javascript]
+    severity: WARNING
+    message: >-
+      La trace technique (stack) est renvoyée au client. En production,
+      journaliser l’erreur côté serveur et ne renvoyer qu’un message générique.
+    patterns:
+      - pattern: 'res.status(...).json({ ..., stack: $X, ... })'
