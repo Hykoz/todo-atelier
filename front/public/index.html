@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mes tâches</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mes tâches</h1>
+    <nav id="nav" hidden>
+      <span id="whoami"></span>
+      <button id="btn-admin" class="secondary" hidden>Administration</button>
+      <button id="btn-logout" class="secondary">Déconnexion</button>
+    </nav>
+  </header>
+
+  <main>
+    <p id="message" class="message" hidden></p>
+    <p id="search-info"></p>
+
+    <section id="auth-section">
+      <div class="card">
+        <div class="tabs">
+          <button id="tab-login" class="tab active" type="button">Connexion</button>
+          <button id="tab-register" class="tab" type="button">Inscription</button>
+        </div>
+
+        <form id="login-form">
+          <label>Nom d’utilisateur
+            <input id="login-username" autocomplete="username" required>
+          </label>
+          <label>Mot de passe
+            <input id="login-password" type="password" autocomplete="current-password" required>
+          </label>
+          <button type="submit">Se connecter</button>
+        </form>
+
+        <form id="register-form" hidden>
+          <label>Nom d’utilisateur
+            <input id="register-username" autocomplete="username" required>
+          </label>
+          <label>Adresse e-mail
+            <input id="register-email" type="email" autocomplete="email">
+          </label>
+          <label>Mot de passe
+            <input id="register-password" type="password" autocomplete="new-password" required>
+          </label>
+          <button type="submit">Créer mon compte</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="todo-section" hidden>
+      <div class="card">
+        <h2>Nouvelle tâche</h2>
+        <form id="todo-form">
+          <label>Titre
+            <input id="todo-title" maxlength="200" required>
+          </label>
+          <label>Description
+            <textarea id="todo-description" rows="2"></textarea>
+          </label>
+          <button type="submit">Ajouter</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Mes tâches</h2>
+        <form id="search-form" class="inline">
+          <input id="search" placeholder="Rechercher une tâche">
+          <button type="submit" class="secondary">Rechercher</button>
+        </form>
+        <ul id="todo-list"></ul>
+      </div>
+    </section>
+
+    <section id="admin-section" hidden>
+      <div class="card">
+        <h2>Administration des comptes</h2>
+        <table>
+          <thead>
+            <tr><th>Id</th><th>Utilisateur</th><th>E-mail</th><th>Rôle</th><th></th></tr>
+          </thead>
+          <tbody id="user-table"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

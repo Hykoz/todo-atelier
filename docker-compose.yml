@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: todo
+      POSTGRES_PASSWORD: todo
+      POSTGRES_DB: todo
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todo -d todo"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  back:
+    build: ./back
+    command: ["node", "--watch", "src/index.js"]
+    environment:
+      DB_HOST: db
+      DB_USER: todo
+      DB_PASSWORD: todo
+      DB_NAME: todo
+      JWT_SECRET: ${JWT_SECRET:-c8f92e4a71b3d6058e1c4a9b2f7d30e6a1b5c8d2f4e90731a6b8c4d0e2f5a7b9}
+      NODE_ENV: development
+    volumes:
+      - ./back/src:/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${BACK_PORT:-3000}:3000"
+    restart: unless-stopped
+
+  front:
+    image: nginx:alpine
+    volumes:
+      - ./front/public:/usr/share/nginx/html:ro
+      - ./front/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - back
+    ports:
+      - "127.0.0.1:${FRONT_PORT:-8080}:80"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - ./db/servers.json:/pgadmin4/servers.json:ro
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
